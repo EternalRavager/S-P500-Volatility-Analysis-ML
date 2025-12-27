@@ -25,11 +25,11 @@ A Machine Learning application that predicts stock market volatility using Rando
 
 ## 🎯 Overview
 
-This project predicts whether a stock will experience **High** or **Low** volatility based on historical price data and technical indicators. The model is trained on **5 years of real market data** from **S&P 500 / Fortune 500 companies** (fetched from slickcharts.com, matching ML.ipynb) and uses 11 carefully engineered features.
+This project predicts whether a stock will experience **High** or **Low** volatility based on historical price data and technical indicators. The model is trained on **5 years of real market data** from **S&P 500 / Fortune 500 companies** (fetched from slickcharts.com) and uses 11 carefully engineered features.
 
 ### Key Highlights
 
-- **Fortune 500 Training Data**: Model trained on real stock data from S&P 500 companies (matching ML.ipynb)
+- **Fortune 500 Training Data**: Model trained on real stock data from S&P 500 companies
 - **5 Years of History**: Comprehensive training covering multiple market cycles
 - **Fast Predictions**: Real-time predictions using 90 days of recent data for optimal speed
 - **11 Technical Indicators**: Including moving averages, momentum, and volume analysis
@@ -130,7 +130,7 @@ Navigate to: **http://localhost:5000**
 python src/train_real_data.py
 ```
 
-**What it does (matching ML.ipynb):**
+**What it does:**
 1. Fetches S&P 500 / Fortune 500 ticker list from slickcharts.com
 2. Downloads 5 years of historical data for each stock via Yahoo Finance
 3. Fetches Gold futures data (GC=F) for market correlation
@@ -165,7 +165,7 @@ python src/retrain_enhanced_model.py
 
 ### Current Model Statistics
 
-These metrics are from training on **5 years of real Fortune 500 stock data** (matching ML.ipynb results):
+These metrics are from training on **5 years of real Fortune 500 stock data** (  results):
 
 | Metric | Value | Description |
 |--------|-------|-------------|
@@ -217,7 +217,7 @@ The model learns patterns from 5 years but applies them to the latest 90-day sna
 
 ## 🔧 Technical Details
 
-### Data Pipeline (Matching ML.ipynb)
+### Data Pipeline
 
 ```
 1. Fetch Fortune 500 tickers from slickcharts.com
@@ -450,4 +450,4 @@ This project is for educational and demonstration purposes.
 
 ---
 
-*Last Updated: December 2024*
+*Last Updated: December 2025*
