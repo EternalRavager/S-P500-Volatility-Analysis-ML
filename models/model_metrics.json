@@ -1,21 +1,81 @@
 {
-  "accuracy": 0.5391849529780565,
-  "f1_score": 0.5362703717156516,
+  "accuracy": 0.6412037037037037,
+  "f1_score": 0.639342587662393,
+  "roc_auc": 0.8238937393595113,
+  "cv_accuracy_mean": 0.5284970096506313,
+  "cv_accuracy_std": 0.03764585276264712,
   "feature_importance": {
-    "Open": 0.08140957091860193,
-    "High": 0.0812630002954245,
-    "Low": 0.08351770765544836,
-    "Close": 0.09373303120668136,
-    "Volume": 0.07475090118849766,
-    "Gold_Close": 0.08183389248428101,
-    "MA_5": 0.10452646223225441,
-    "MA_20": 0.14953631931306638,
-    "ROC": 0.09954055180668121,
-    "Price_Range": 0.07767707112450854,
-    "Volume_Change": 0.07221149177455467
+    "Open": 0.041396533805981045,
+    "High": 0.038610267907082246,
+    "Low": 0.06676664574871502,
+    "Close": 0.051570919487032976,
+    "Volume": 0.20023430221900906,
+    "Gold_Close": 0.04943129735678473,
+    "MA_5": 0.062195551787636895,
+    "MA_20": 0.06669757762953796,
+    "ROC": 0.22475252455975298,
+    "Price_Range": 0.1825588383954998,
+    "Volume_Change": 0.01578554110296736
   },
-  "trained_date": "2025-12-27 16:26:09",
+  "confusion_matrix": [
+    [
+      3174,
+      869,
+      91
+    ],
+    [
+      1442,
+      2096,
+      722
+    ],
+    [
+      404,
+      967,
+      2763
+    ]
+  ],
+  "trained_date": "2025-12-27 21:57:18",
   "model_type": "Random Forest",
-  "n_estimators": 100,
-  "training_samples": 4781
+  "model_params": {
+    "n_estimators": 100,
+    "max_depth": 10,
+    "min_samples_split": 10,
+    "min_samples_leaf": 5,
+    "random_state": 42
+  },
+  "data_info": {
+    "source": "Yahoo Finance (Real Data) - S&P 500 from slickcharts.com",
+    "period_years": 5,
+    "stocks_attempted": 50,
+    "stocks_successful": 50,
+    "stocks_used": [
+      "NVDA",
+      "AAPL",
+      "MSFT",
+      "AMZN",
+      "GOOGL",
+      "GOOG",
+      "META",
+      "AVGO",
+      "TSLA",
+      "BRK-B",
+      "LLY",
+      "JPM",
+      "WMT",
+      "V",
+      "ORCL",
+      "MA",
+      "XOM",
+      "JNJ",
+      "PLTR",
+      "BAC"
+    ],
+    "training_samples": 50110,
+    "test_samples": 12528,
+    "total_samples": 62638
+  },
+  "training_time_seconds": 0.91,
+  "fetch_time_seconds": 12.3,
+  "total_time_seconds": 18.41,
+  "notes": "Model trained on 5 years of real S&P 500 stock data (matching ML.ipynb). Predictions use 90-day window for speed."
 }

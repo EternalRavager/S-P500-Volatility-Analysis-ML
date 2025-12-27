@@ -15,8 +15,9 @@ Flask>=2.3.0
 # Market Data
 yfinance>=0.2.0
 
-# API Testing
+# Web Scraping (for Fortune 500 list from slickcharts.com)
 requests>=2.31.0
+beautifulsoup4>=4.12.0
 
 # Optional: Jupyter Notebook (if you want to explore ML.ipynb)
 # jupyter>=1.0.0
