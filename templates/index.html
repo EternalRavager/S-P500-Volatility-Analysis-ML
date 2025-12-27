@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Volatility Prediction System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Georgia, 'Times New Roman', serif;
+            background: #f5f5f0;
+            min-height: 100vh;
+            padding: 20px;
+            color: #2c3e50;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            border: 1px solid #d0d0d0;
+        }
+        .header { 
+            text-align: center; 
+            border-bottom: 3px double #2c3e50; 
+            padding-bottom: 20px; 
+            margin-bottom: 30px; 
+            background: #34495e;
+            color: white;
+            padding: 25px;
+            margin: -30px -30px 30px -30px;
+        }
+        .header h1 { 
+            font-size: 2.2em; 
+            margin-bottom: 8px; 
+            font-weight: 500; 
+            letter-spacing: 1px; 
+        }
+        .header p { 
+            font-size: 1.05em; 
+            font-style: italic; 
+            opacity: 0.95; 
+            margin-top: 5px;
+        }
+        .header .subtitle { 
+            font-size: 0.9em; 
+            margin-top: 12px; 
+            border-top: 1px solid rgba(255,255,255,0.3); 
+            padding-top: 10px; 
+            font-style: normal;
+        }
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        @media (max-width: 1024px) { .dashboard { grid-template-columns: 1fr; } }
+        .card {
+            background: #fafafa;
+            border: 2px solid #bdc3c7;
+            border-radius: 4px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .card h2 { 
+            color: #2c3e50; 
+            margin-bottom: 18px; 
+            font-size: 1.4em; 
+            border-bottom: 2px solid #34495e; 
+            padding-bottom: 8px; 
+            font-weight: 500;
+        }
+        .card h3 { 
+            color: #34495e; 
+            margin-bottom: 12px; 
+            font-size: 1.15em; 
+            margin-top: 15px; 
+            font-weight: 500;
+        }
+        .full-width { grid-column: 1 / -1; }
+        .input-group { display: flex; gap: 12px; margin-bottom: 18px; }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            font-size: 15px;
+            border: 2px solid #95a5a6;
+            border-radius: 3px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: white;
+        }
+        input[type="text"]:focus { 
+            outline: none; 
+            border-color: #34495e; 
+            background: #fff;
+        }
+        button {
+            padding: 12px 30px;
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+            background: #34495e;
+            border: 2px solid #2c3e50;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: Georgia, serif;
+            letter-spacing: 0.5px;
+        }
+        button:hover { 
+            background: #2c3e50; 
+            border-color: #1a252f;
+        }
+        button:active { 
+            background: #1a252f; 
+        }
+        button:disabled { 
+            background: #95a5a6; 
+            border-color: #7f8c8d;
+            cursor: not-allowed; 
+        }
+        .loading { 
+            display: none; 
+            text-align: center; 
+            padding: 30px; 
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            border-radius: 3px;
+        }
+        .spinner {
+            border: 4px solid #ecf0f1;
+            border-top: 4px solid #34495e;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error {
+            display: none;
+            padding: 15px;
+            background: #fadbd8;
+            border: 2px solid #e74c3c;
+            border-radius: 3px;
+            color: #c0392b;
+            margin-bottom: 20px;
+            font-weight: 500;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .results { display: none; }
+        .prediction-box {
+            text-align: center;
+            padding: 30px;
+            border: 3px solid;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            background: white;
+        }
+        .prediction-box.low { 
+            border-color: #27ae60; 
+            background: #d5f4e6;
+        }
+        .prediction-box.medium { 
+            border-color: #f39c12; 
+            background: #fef5e7;
+        }
+        .prediction-box.high { 
+            border-color: #e74c3c; 
+            background: #fadbd8;
+        }
+        .prediction-label { 
+            font-size: 1em; 
+            margin-bottom: 10px; 
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #34495e;
+        }
+        .prediction-value { 
+            font-size: 2.8em; 
+            font-weight: bold; 
+            margin: 10px 0;
+        }
+        .prediction-box.low .prediction-value { color: #27ae60; }
+        .prediction-box.medium .prediction-value { color: #d68910; }
+        .prediction-box.high .prediction-value { color: #c0392b; }
+        .confidence-badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 8px 20px;
+            background: #34495e;
+            color: white;
+            border-radius: 3px;
+            font-size: 0.95em;
+            font-weight: 600;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .interpretation {
+            margin-top: 18px;
+            padding: 15px;
+            background: rgba(0,0,0,0.05);
+            border-left: 4px solid #34495e;
+            border-radius: 3px;
+            font-size: 0.95em;
+            line-height: 1.6;
+            text-align: left;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .info-item {
+            background: white;
+            padding: 15px;
+            border: 1px solid #bdc3c7;
+            border-radius: 3px;
+            border-left: 4px solid #34495e;
+        }
+        .info-item-label { 
+            font-size: 0.8em; 
+            color: #7f8c8d; 
+            margin-bottom: 6px; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .info-item-value { 
+            font-size: 1.3em; 
+            font-weight: bold; 
+            color: #2c3e50; 
+            font-family: 'Courier New', monospace;
+        }
+        .probabilities h3 { margin-bottom: 15px; color: #2c3e50; }
+        .prob-bar { margin-bottom: 20px; }
+        .prob-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9em;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .prob-track {
+            background: #ecf0f1;
+            height: 28px;
+            border: 1px solid #bdc3c7;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .prob-fill {
+            height: 100%;
+            transition: width 0.8s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.85em;
+            font-weight: bold;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .prob-fill.low { background: #27ae60; }
+        .prob-fill.medium { background: #f39c12; }
+        .prob-fill.high { background: #e74c3c; }
+        .feature-importance { margin-top: 20px; }
+        .feature-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 14px;
+            gap: 12px;
+        }
+        .feature-name {
+            min-width: 120px;
+            font-weight: 600;
+            font-size: 0.85em;
+            color: #34495e;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .feature-track {
+            flex: 1;
+            background: #ecf0f1;
+            height: 22px;
+            border: 1px solid #bdc3c7;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+        .feature-fill {
+            height: 100%;
+            background: #34495e;
+            transition: width 0.6s ease;
+        }
+        .feature-percent {
+            min-width: 55px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 0.85em;
+            color: #2c3e50;
+            font-family: 'Courier New', monospace;
+        }
+        .tech-indicators { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; 
+        }
+        .tech-item {
+            background: white;
+            padding: 15px;
+            border: 1px solid #bdc3c7;
+            border-radius: 3px;
+            border-left: 4px solid #2c3e50;
+        }
+        .tech-item-label { 
+            font-size: 0.85em; 
+            color: #7f8c8d; 
+            margin-bottom: 6px; 
+            font-weight: 600;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .tech-item-value { 
+            font-size: 1.25em; 
+            font-weight: bold; 
+            color: #2c3e50; 
+            font-family: 'Courier New', monospace;
+        }
+        .trend-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-top: 5px;
+            border: 1px solid;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .trend-badge.bullish { background: #d5f4e6; color: #27ae60; border-color: #27ae60; }
+        .trend-badge.bearish { background: #fadbd8; color: #c0392b; border-color: #e74c3c; }
+        .trend-badge.neutral { background: #fef5e7; color: #d68910; border-color: #f39c12; }
+        .examples {
+            margin-top: 18px;
+            padding: 18px;
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            border-radius: 3px;
+        }
+        .examples p { 
+            color: #34495e; 
+            margin-bottom: 12px; 
+            font-weight: 600; 
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .example-tickers { display: flex; flex-wrap: wrap; gap: 10px; }
+        .example-ticker {
+            background: white;
+            padding: 8px 16px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid #95a5a6;
+            font-weight: 600;
+            color: #2c3e50;
+            font-family: 'Courier New', monospace;
+        }
+        .example-ticker:hover {
+            border-color: #34495e;
+            background: #34495e;
+            color: white;
+        }
+        .model-info-box {
+            background: #34495e;
+            color: white;
+            padding: 22px;
+            border: 2px solid #2c3e50;
+            border-radius: 3px;
+            margin-top: 20px;
+        }
+        .model-info-box h4 { 
+            margin-bottom: 15px; 
+            font-size: 1.15em; 
+            font-weight: 500;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 10px;
+        }
+        .model-info-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; 
+            margin-top: 15px; 
+        }
+        .model-stat { 
+            background: rgba(255,255,255,0.1); 
+            padding: 12px; 
+            border-radius: 3px; 
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .model-stat-label { 
+            font-size: 0.8em; 
+            opacity: 0.85; 
+            margin-bottom: 6px; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .model-stat-value { 
+            font-size: 1.3em; 
+            font-weight: bold; 
+            font-family: 'Courier New', monospace;
+        }
+        .methodology {
+            background: #fef9e7;
+            border: 2px solid #f4d03f;
+            border-radius: 3px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .methodology h4 {
+            color: #7d6608;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+        .methodology ul {
+            margin-left: 20px;
+            line-height: 1.8;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .methodology li {
+            margin-bottom: 6px;
+            color: #5d4e03;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Stock Volatility Prediction System</h1>
+            <p>Machine Learning-Based Financial Risk Assessment Platform</p>
+            <p class="subtitle">Random Forest Classification Model | Real-Time Market Data Analysis | Technical Indicator Integration</p>
+        </div>
+
+        <div class="card full-width">
+            <h2>Prediction Interface</h2>
+            <div class="input-group">
+                <input type="text" id="tickerInput" placeholder="Enter stock ticker symbol (e.g., AAPL, MSFT, GOOGL)" autocomplete="off">
+                <button id="predictBtn" onclick="predict()">Analyze Volatility</button>
+            </div>
+            <div class="examples">
+                <p>Sample Tickers for Analysis:</p>
+                <div class="example-tickers">
+                    <span class="example-ticker" onclick="setTicker('AAPL')">AAPL</span>
+                    <span class="example-ticker" onclick="setTicker('MSFT')">MSFT</span>
+                    <span class="example-ticker" onclick="setTicker('TSLA')">TSLA</span>
+                    <span class="example-ticker" onclick="setTicker('GOOGL')">GOOGL</span>
+                    <span class="example-ticker" onclick="setTicker('AMZN')">AMZN</span>
+                    <span class="example-ticker" onclick="setTicker('NVDA')">NVDA</span>
+                    <span class="example-ticker" onclick="setTicker('META')">META</span>
+                    <span class="example-ticker" onclick="setTicker('NFLX')">NFLX</span>
+                    <span class="example-ticker" onclick="setTicker('JPM')">JPM</span>
+                    <span class="example-ticker" onclick="setTicker('BAC')">BAC</span>
+                </div>
+            </div>
+            <div class="methodology">
+                <h4>Methodology & Data Sources</h4>
+                <ul>
+                    <li><strong>Algorithm:</strong> Random Forest Classifier with 100 decision trees</li>
+                    <li><strong>Features:</strong> 11 advanced market indicators including:
+                        <ul style="margin-top: 5px; margin-left: 15px;">
+                            <li>Core Metrics: Open, High, Low, Close, Volume, Gold Price</li>
+                            <li>Technical Indicators: MA-5, MA-20, ROC, Price Range, Volume Change</li>
+                        </ul>
+                    </li>
+                    <li><strong>Data Source:</strong> Yahoo Finance API (90-day historical window)</li>
+                    <li><strong>Technical Analysis:</strong> Moving Averages for trend detection, Rate of Change for momentum, Price Range for intraday volatility</li>
+                    <li><strong>Gold Correlation:</strong> Gold futures (GC=F) used as market sentiment indicator</li>
+                    <li><strong>Output Classes:</strong> Low, Medium, High volatility classification</li>
+                </ul>
+            </div>
+            <div class="error" id="errorBox"></div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="color: #7f8c8d; font-weight: 500; font-family: 'Segoe UI', Arial, sans-serif;">Retrieving market data and computing volatility metrics...</p>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <div class="dashboard">
+                <div>
+                    <div class="card">
+                        <div class="prediction-box" id="predictionBox">
+                            <div class="prediction-label">Predicted Volatility Classification</div>
+                            <div class="prediction-value" id="predictionValue">-</div>
+                            <div class="confidence-badge" id="confidenceBadge">Model Confidence: -</div>
+                            <div class="interpretation" id="interpretation">-</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Market Data Summary</h2>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-item-label">Ticker Symbol</div>
+                                <div class="info-item-value" id="ticker">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-item-label">Analysis Date</div>
+                                <div class="info-item-value" id="date">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-item-label">Opening Price</div>
+                                <div class="info-item-value" id="open">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-item-label">Daily High</div>
+                                <div class="info-item-value" id="high">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-item-label">Daily Low</div>
+                                <div class="info-item-value" id="low">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-item-label">Closing Price</div>
+                                <div class="info-item-value" id="close">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-item-label">Trading Volume</div>
+                                <div class="info-item-value" id="volume">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-item-label">Gold Futures</div>
+                                <div class="info-item-value" id="gold">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Technical Analysis Indicators</h2>
+                        <div class="tech-indicators" id="techIndicators"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card">
+                        <h2>Model Confidence Distribution</h2>
+                        <div class="probabilities">
+                            <div class="prob-bar">
+                                <div class="prob-label">
+                                    <span>Low Volatility Probability</span>
+                                    <span id="lowPercent">0%</span>
+                                </div>
+                                <div class="prob-track">
+                                    <div class="prob-fill low" id="lowBar"></div>
+                                </div>
+                            </div>
+                            <div class="prob-bar">
+                                <div class="prob-label">
+                                    <span>Medium Volatility Probability</span>
+                                    <span id="mediumPercent">0%</span>
+                                </div>
+                                <div class="prob-track">
+                                    <div class="prob-fill medium" id="mediumBar"></div>
+                                </div>
+                            </div>
+                            <div class="prob-bar">
+                                <div class="prob-label">
+                                    <span>High Volatility Probability</span>
+                                    <span id="highPercent">0%</span>
+                                </div>
+                                <div class="prob-track">
+                                    <div class="prob-fill high" id="highBar"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Feature Contribution Analysis</h2>
+                        <p style="color: #7f8c8d; font-size: 0.9em; margin-bottom: 15px; font-family: 'Segoe UI', Arial, sans-serif;">Relative importance of each feature in the prediction model:</p>
+                        <div class="feature-importance" id="featureImportance"></div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Model Specifications</h2>
+                        <div class="model-info-box">
+                            <h4>Random Forest Classification Model</h4>
+                            <div class="model-info-grid">
+                                <div class="model-stat">
+                                    <div class="model-stat-label">Decision Trees</div>
+                                    <div class="model-stat-value">100</div>
+                                </div>
+                                <div class="model-stat">
+                                    <div class="model-stat-label">Input Features</div>
+                                    <div class="model-stat-value">11</div>
+                                </div>
+                                <div class="model-stat">
+                                    <div class="model-stat-label">Test Accuracy</div>
+                                    <div class="model-stat-value">55.7%</div>
+                                </div>
+                                <div class="model-stat">
+                                    <div class="model-stat-label">F1 Score</div>
+                                    <div class="model-stat-value">54.7%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px; padding: 12px; background: #fef9e7; border: 1px solid #f4d03f; border-radius: 3px; font-size: 0.85em; font-family: 'Segoe UI', Arial, sans-serif; color: #7d6608;">
+                            <strong>Note:</strong> This model provides probabilistic volatility predictions based on historical patterns. Market conditions can change rapidly. Use these predictions as one component of comprehensive investment analysis.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setTicker(ticker) {
+            document.getElementById("tickerInput").value = ticker;
+        }
+
+        document.getElementById("tickerInput").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") predict();
+        });
+
+        async function predict() {
+            const ticker = document.getElementById("tickerInput").value.trim();
+            if (!ticker) {
+                showError("Please enter a valid ticker symbol");
+                return;
+            }
+
+            document.getElementById("results").style.display = "none";
+            document.getElementById("errorBox").style.display = "none";
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("predictBtn").disabled = true;
+
+            try {
+                const response = await fetch("/predict", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ticker: ticker })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Prediction failed");
+                }
+
+                displayResults(data);
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("predictBtn").disabled = false;
+            }
+        }
+
+        function displayResults(data) {
+            const predictionBox = document.getElementById("predictionBox");
+            const predictionValue = document.getElementById("predictionValue");
+            
+            predictionValue.textContent = data.prediction + " Volatility";
+            predictionBox.className = "prediction-box " + data.prediction.toLowerCase();
+            document.getElementById("confidenceBadge").textContent = 
+                "Model Confidence: " + (data.confidence * 100).toFixed(1) + "%";
+            document.getElementById("interpretation").textContent = data.interpretation;
+
+            document.getElementById("ticker").textContent = data.ticker;
+            document.getElementById("date").textContent = data.date;
+            document.getElementById("open").textContent = "$" + data.stock_data.open.toFixed(2);
+            document.getElementById("high").textContent = "$" + data.stock_data.high.toFixed(2);
+            document.getElementById("low").textContent = "$" + data.stock_data.low.toFixed(2);
+            document.getElementById("close").textContent = "$" + data.stock_data.close.toFixed(2);
+            document.getElementById("volume").textContent = formatVolume(data.stock_data.volume);
+            document.getElementById("gold").textContent = "$" + data.gold_price.toFixed(2);
+
+            updateProbability("low", data.probabilities.low);
+            updateProbability("medium", data.probabilities.medium);
+            updateProbability("high", data.probabilities.high);
+
+            displayTechnicalIndicators(data.technical_indicators, data.historical_volatility);
+            displayFeatureImportance(data.feature_contributions);
+
+            document.getElementById("results").style.display = "block";
+        }
+
+        function displayTechnicalIndicators(indicators, histVol) {
+            const container = document.getElementById("techIndicators");
+            const trendClass = indicators.trend.toLowerCase();
+            
+            container.innerHTML = `
+                <div class="tech-item">
+                    <div class="tech-item-label">5-Day Moving Average</div>
+                    <div class="tech-item-value">${indicators.ma_5 !== null ? '$' + indicators.ma_5.toFixed(2) : 'N/A'}</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-item-label">20-Day Moving Average</div>
+                    <div class="tech-item-value">${indicators.ma_20 !== null ? '$' + indicators.ma_20.toFixed(2) : 'N/A'}</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-item-label">Rate of Change (5-day)</div>
+                    <div class="tech-item-value">${indicators.roc !== null ? indicators.roc.toFixed(2) + '%' : 'N/A'}</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-item-label">Intraday Price Range</div>
+                    <div class="tech-item-value">$${indicators.price_range.toFixed(2)}</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-item-label">Volume Change</div>
+                    <div class="tech-item-value">${indicators.volume_change !== null ? indicators.volume_change.toFixed(2) + '%' : 'N/A'}</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-item-label">Market Trend Direction</div>
+                    <div class="tech-item-value">
+                        <span class="trend-badge ${trendClass}">${indicators.trend}</span>
+                    </div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-item-label">Historical Volatility (Annualized)</div>
+                    <div class="tech-item-value">${(histVol * 100).toFixed(2)}%</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-item-label">Daily Price Change</div>
+                    <div class="tech-item-value" style="color: ${((indicators.price_range / indicators.ma_20) * 100) > 2 ? '#e74c3c' : '#27ae60'}">
+                        ${((indicators.price_range / (indicators.ma_20 || 1)) * 100).toFixed(2)}%
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayFeatureImportance(features) {
+            const container = document.getElementById("featureImportance");
+            container.innerHTML = features.map(feature => `
+                <div class="feature-bar">
+                    <div class="feature-name">${feature.name}</div>
+                    <div class="feature-track">
+                        <div class="feature-fill" style="width: ${feature.contribution}%"></div>
+                    </div>
+                    <div class="feature-percent">${feature.contribution.toFixed(1)}%</div>
+                </div>
+            `).join('');
+        }
+
+        function updateProbability(type, value) {
+            const percent = (value * 100).toFixed(1);
+            document.getElementById(type + "Percent").textContent = percent + "%";
+            document.getElementById(type + "Bar").style.width = percent + "%";
+            document.getElementById(type + "Bar").textContent = percent + "%";
+        }
+
+        function formatVolume(volume) {
+            if (volume >= 1e9) return (volume / 1e9).toFixed(2) + "B";
+            if (volume >= 1e6) return (volume / 1e6).toFixed(2) + "M";
+            if (volume >= 1e3) return (volume / 1e3).toFixed(2) + "K";
+            return volume.toFixed(0);
+        }
+
+        function showError(message) {
+            const errorBox = document.getElementById("errorBox");
+            errorBox.textContent = "Error: " + message;
+            errorBox.style.display = "block";
+        }
+    </script>
+</body>
+</html>
