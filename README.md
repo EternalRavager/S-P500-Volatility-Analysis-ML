@@ -1,108 +1,217 @@
-# Stock Volatility Predictor 
+# Stock Volatility Predictor
 
-A Machine Learning application that forecasts stock market volatility using Random Forest classification and real-time technical analysis.
+Machine Learning application for predicting stock market volatility using Random Forest and real-time technical indicators.
 
-## Project Overview
+## Features
+- ✅ Real-time stock data from Yahoo Finance
+- ✅ 11 technical indicators (MA-5, MA-20, ROC, Price Range, Volume Change)
+- ✅ Gold price correlation analysis
+- ✅ Feature importance visualization
+- ✅ Confidence scoring for predictions
+- ✅ Dynamic model metrics (accuracy, F1-score)
 
-This project aims to help traders identify potential risks by classifying stocks into **Low**, **Medium**, or **High** volatility categories. Unlike simple price tracking, this tool analyzes market sentiment, momentum, and macroeconomic factors (like Gold prices) to generate a probabilistic risk assessment.
+## Quick Start
 
-I built this to explore the intersection of quantitative finance and supervised learning, specifically focusing on how technical indicators (Moving Averages, ROC) influence model decision-making.
+### 1. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
 
-## Tech Stack
+### 2. Run Application
+```bash
+python run.py
+```
 
-* **Core:** Python 3.9+
-* **Machine Learning:** Scikit-Learn (Random Forest Classifier)
-* **Data Processing:** Pandas, NumPy
-* **Market Data:** Yahoo Finance API (`yfinance`)
-* **Backend:** Flask (REST API)
-* **Frontend:** HTML5, CSS3, Vanilla JavaScript (Async/Await)
-
-## Key Features
-
-* **Real-Time Analysis:** Fetches live market data on-demand; no stale databases.
-* **Feature Engineering:** Calculates 5-day/20-day Moving Averages, Price Range, and Rate of Change (ROC) dynamically.
-* **Macro Correlation:** Includes Gold Futures (GC=F) as a feature to gauge market fear/sentiment.
-* **Explainable AI:** The UI displays "Feature Contributions," showing exactly which factors (e.g., Volume vs. Trend) influenced the specific prediction.
-* **Robust Pipeline:** Includes scripts for data preprocessing, model retraining, and frontend generation.
+### 3. Access Web Interface
+- Open browser: **http://localhost:5000**
+- Enter stock ticker (e.g., AAPL, GOOGL, TSLA)
+- View volatility prediction with confidence scores
 
 ## Project Structure
-
-```text
-├── app.py                     # Main Flask application & API endpoints
-├── retrain_enhanced_model.py  # ML Pipeline: Loads data -> Engineers Features -> Trains Model
-├── build_frontend.py          # Generates the HTML templates
-├── test_api.py                # Integration test script
-├── rf_volatility_model.pkl    # Serialized Random Forest Model
-└── templates/
-    └── index.html             # The User Interface
 ```
-Future Improvements
-If I had more time, I would expand this project by:
-
-Implementing an LSTM (Deep Learning) model to compare against the Random Forest.
-
-Adding a sentiment analysis feature using news headlines via NLTK.
-
-Dockerizing the application for easier deployment.
-
-How to Run
-1. Install Dependencies
-```Bash
-pip install flask pandas numpy scikit-learn yfinance joblib requests
+Stock_Volatility_ML/
+├── src/                          # Source code
+│   ├── app.py                    # Flask web application
+│   ├── retrain_enhanced_model.py # Model training script
+│   └── generate_sample_data.py   # Sample data generator
+├── models/                       # Trained models
+│   ├── volatility_model.pkl      # Random Forest model
+│   └── model_metrics.json        # Performance metrics
+├── data/                         # Training datasets
+│   └── ml_preprocessed_data.csv
+├── templates/                    # HTML templates
+│   └── index.html
+├── tests/                        # Test scripts
+│   ├── test_api.py
+│   ├── validate_all.py
+│   └── verify_training.py
+├── docs/                         # Documentation
+│   └── README.md
+├── run.py                        # Application entry point
+└── requirements.txt              # Python dependencies
 ```
-2. Generate the Frontend
-Run this once to build the HTML interface.
 
-```Bash
-python build_frontend.py
+## Model Information
+- **Algorithm**: Random Forest Classifier (100 trees)
+- **Features**: 11 technical indicators + gold correlation
+- **Performance**: Metrics loaded from `models/model_metrics.json`
+  - Accuracy: ~55.7%
+  - F1-Score: ~54.7%
+- **Training Data**: 1000+ samples with engineered features
+
+## Testing
+
+### Validate All Components
+```bash
+python tests/validate_all.py
 ```
-3. Start the Server
-```Bash
-python app.py
+
+### Test API Endpoints
+```bash
+python tests/test_api.py
 ```
-You should see: Running on http://127.0.0.1:5000
 
-4. Access the App
-Open your browser and navigate to http://localhost:5000.
-
-5. (Optional) Run Tests
-Open a second terminal window and run:
-
-```Bash
-python test_api.py
+### Verify Model Training
+```bash
+python tests/verify_training.py
 ```
----
 
-### How to Run and Verify (For You)
+## Retraining Model
 
-Here is your exact checklist to get this running and verify it works before your interview.
+To retrain with updated data:
 
-1.  **Setup the Frontend:**
-    Run the build script to create the `templates` folder and `index.html`.
-    ```bash
-    python build_frontend.py
-    ```
-    *Output:* `✓ Successfully generated frontend at: templates/index.html`
+```bash
+python src/retrain_enhanced_model.py
+```
 
-2.  **Verify Model Existence:**
-    Make sure `rf_volatility_model.pkl` is in the same folder. If you don't have it, run `python retrain_enhanced_model.py` (assuming you have the CSV data). *If you do not have the CSV data anymore, let me know, and I can write a script to generate dummy data so the training script works.*
+This will:
+1. Generate/load training data from `data/ml_preprocessed_data.csv`
+2. Train Random Forest model with 100 estimators
+3. Save model to `models/volatility_model.pkl`
+4. Save performance metrics to `models/model_metrics.json`
+5. Display feature importance rankings
 
-3.  **Start the App:**
-    ```bash
-    python app.py
-    ```
-    *Output:*
-    ```text
-    ✓ Model loaded successfully...
-    * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
-    ```
+## API Endpoints
 
-4.  **Verify via Browser:**
-    Go to `http://localhost:5000`. Type "AAPL" and click Analyze. You should see the gauge charts animate and data populate.
+### `GET /`
+Main web interface with interactive UI
 
-5.  **Verify via Test Script:**
-    Keep `app.py` running. Open a **new** terminal window and run:
-    ```bash
-    python test_api.py
-    ```
-    *Output:* `✓ Success! (Time: 0.xxs)` followed by a breakdown of the prediction data.
+### `POST /predict`
+**Request:**
+```json
+{
+  "ticker": "AAPL"
+}
+```
+
+**Response:**
+```json
+{
+  "ticker": "AAPL",
+  "prediction": "Low Volatility",
+  "confidence": 0.87,
+  "feature_importance": {...},
+  "current_price": 178.25,
+  "date": "2024-12-27"
+}
+```
+
+## Feature Engineering
+
+Input features calculated from 90 days of historical data:
+
+| Feature | Description |
+|---------|-------------|
+| Open, High, Low, Close | Daily OHLC prices |
+| Volume | Trading volume |
+| Gold_Close | Gold futures price (GC=F) |
+| MA_5 | 5-day moving average |
+| MA_20 | 20-day moving average |
+| ROC | Rate of Change (momentum) |
+| Price_Range | High - Low (intraday range) |
+| Volume_Change | % change in volume |
+
+## Technical Details
+
+### Model Training Process
+1. Load preprocessed data (`ml_preprocessed_data.csv`)
+2. Split into 80% train, 20% test
+3. Train Random Forest with 100 trees
+4. Evaluate on test set
+5. Save model and metrics
+
+### Prediction Pipeline
+1. Fetch 90 days historical data via yfinance
+2. Calculate 11 technical indicators
+3. Normalize features
+4. Predict volatility class
+5. Return confidence scores
+
+## Future Enhancements
+- [ ] LSTM deep learning model
+- [ ] News sentiment analysis integration
+- [ ] Multi-stock portfolio analysis
+- [ ] Docker containerization
+- [ ] CI/CD pipeline with GitHub Actions
+- [ ] Real-time WebSocket updates
+- [ ] Backtesting framework
+
+## Requirements
+- Python 3.8+
+- Flask 3.0.0
+- scikit-learn 1.3.0
+- pandas 2.1.0
+- numpy 1.24.3
+- yfinance 0.2.28
+- joblib 1.3.2
+
+## Development Workflow
+
+### Adding New Features
+1. Update feature engineering in `retrain_enhanced_model.py`
+2. Retrain model to generate new metrics
+3. Update `app.py` if new features require different preprocessing
+4. Run validation tests
+
+### Running Tests Before Deployment
+```bash
+# Validate all components
+python tests/validate_all.py
+
+# Test API functionality
+python tests/test_api.py
+
+# Verify model predictions
+python tests/verify_training.py
+```
+
+## Troubleshooting
+
+### Model Not Found Error
+```bash
+# Retrain the model
+python src/retrain_enhanced_model.py
+```
+
+### Import Errors
+```bash
+# Reinstall dependencies
+pip install -r requirements.txt
+```
+
+### Port Already in Use
+```python
+# Edit run.py and change port
+app.run(debug=True, host='0.0.0.0', port=5001)
+```
+
+## License
+Educational project for machine learning demonstration.
+
+## Author
+Developed for academic purposes - Stock Market Volatility Prediction using ML
+
+## Acknowledgments
+- Yahoo Finance for real-time stock data
+- scikit-learn for machine learning framework
+- Flask for web framework
